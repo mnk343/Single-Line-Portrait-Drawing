@@ -1,85 +1,138 @@
+import pickle
 from queue import Queue
 from random import randint
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw
 import numpy
 
 input_image = Image.open("image.png")
 grayscale_image = ImageOps.grayscale( input_image )
-# grayscale_image.show()
-
+grayscale_image.show()
 np_image = numpy.array(grayscale_image)
-print(np_image.shape)
-
-# for i in range(len(np_image)):
-# 	for j in range(len(np_image[i])) :
-# 		print(np_image[i][j])
-# 		np_image[i][j] = 255
-# new_im = Image.fromarray(np_image)
-# new_im.show()
-# generating_points = numpy.random.rand(1000, 2)
-# print(generating_points)
-
+# print(np_image.shape)
+# # print(np_image)
+# for i in np_image:
+# 	print(i)
+# 	print()
+# exit()
 generating_points = []
-while len(generating_points) < 1000:
+while len(generating_points) < 500:
     x, y = randint(0, len(np_image) - 1), randint(0, len(np_image[0]) - 1)
     if (x,y) not in generating_points:
     	generating_points.append((x, y))
 
-grid = []
-for i in range(0 ,(np_image.shape[0])):
-	grid_row = []
-	for j in range(0 ,np_image.shape[1] ):
-		grid_row.append(1000000)
-	grid.append(grid_row)
+def run_single_iteration(generating_points):
+	grid = []
+	for i in range(0 ,(np_image.shape[0])):
+		grid_row = []
+		for j in range(0 ,np_image.shape[1] ):
+			grid_row.append(1000000)
+		grid.append(grid_row)
 
-map_coordinate_to_region = {}
+	map_coordinate_to_region = {}
 
-def get_possible_points( grid_point, grid, visited_pixels ):
-	x_coords = [1,0,-1,0]
-	y_coords = [0,1,0,-1]
-	possibe_points = []
+	def get_possible_points( grid_point, grid, visited_pixels ):
+		x_coords = [1,0,-1,0]
+		y_coords = [0,1,0,-1]
+		possibe_points = []
 
-	for i in range(len(x_coords)):
-		new_point = (grid_point[0] + x_coords[i] , grid_point[1] + y_coords[i])
-		if new_point not in visited_pixels:
-			if new_point[0] >=0 and new_point[1] >= 0:
-				if new_point[0] < len(grid) and new_point[1] < len(grid[0]):
-					possibe_points.append(new_point)
-	# print(grid_point)
-	# print(possibe_points)
-	return possibe_points
+		for i in range(len(x_coords)):
+			new_point = (grid_point[0] + x_coords[i] , grid_point[1] + y_coords[i])
+			if new_point not in visited_pixels:
+				if new_point[0] >=0 and new_point[1] >= 0:
+					if new_point[0] < len(grid) and new_point[1] < len(grid[0]):
+						possibe_points.append(new_point)
+		return possibe_points
 
+	def run_bfs(generating_points):
+		q = Queue()
+		for point in generating_points:
+			q.put( point )
+			grid[point[0]][point[1]] = 0
+			map_coordinate_to_region[point] = point
+		visited_pixels = {}
 
-def run_bfs(generating_points):
-	q = Queue()
-	for point in generating_points:
-		q.put( point )
-		grid[point[0]][point[1]] = 0
-		map_coordinate_to_region[point] = point
-	visited_pixels = {}
+		while q.empty() == False :
+			grid_point = q.get()
+			possible_points = get_possible_points(grid_point, grid, visited_pixels)
+			for possible_point in possible_points:
+				q.put(possible_point)
+				visited_pixels[ possible_point ] = 1
 
-	while q.empty() == False :
-		grid_point = q.get()
-		possible_points = get_possible_points(grid_point, grid, visited_pixels)
-		for possible_point in possible_points:
-			q.put(possible_point)
-			visited_pixels[ possible_point ] = 1
+				if( grid[ possible_point[0] ][ possible_point[1] ] > grid[ grid_point[0] ][ grid_point[1] ] + 1 ):
+					grid[ possible_point[0] ][ possible_point[1] ] = grid[ grid_point[0] ][ grid_point[1] ] + 1 
+					map_coordinate_to_region[possible_point] = map_coordinate_to_region[grid_point]
 
-			if( grid[ possible_point[0] ][ possible_point[1] ] > grid[ grid_point[0] ][ grid_point[1] ] + 1 ):
-				grid[ possible_point[0] ][ possible_point[1] ] = grid[ grid_point[0] ][ grid_point[1] ] + 1 
-				map_coordinate_to_region[possible_point] = map_coordinate_to_region[grid_point]
+	run_bfs(generating_points)
+	# print("done")
 
-# for index in range(len(generating_points)):
-	# point = generating_points[index]
-run_bfs(generating_points)
+	denominator = {}
+	numerator_x = {}
+	numerator_y = {}
 
-# print(generating_points)
-# print(map_coordinate_to_region)
-# print(grid[0][0])
-print("done")
+	for i in range(0 ,(np_image.shape[0])):
+		for j in range(0 ,np_image.shape[1] ):
+			possible_point = (i,j)
+			if map_coordinate_to_region[possible_point] not in denominator:
+				denominator[ map_coordinate_to_region[possible_point] ] = (1 - np_image[i][j]/255)
+			else:
+				denominator[ map_coordinate_to_region[possible_point] ] += (1 - np_image[i][j]/255)
 
-for i in range(0 ,(np_image.shape[0])):
-	for j in range(0 ,np_image.shape[1] ):
-		print( str(i) + " " + str(j) + " " + str(map_coordinate_to_region[(i,j)] ) )	
-	print()
-	print()
+			if map_coordinate_to_region[possible_point] not in numerator_x:
+				numerator_x[ map_coordinate_to_region[possible_point] ] = (i * (1 - np_image[i][j]/255))
+			else:
+				numerator_x[ map_coordinate_to_region[possible_point] ] += (i * (1 - np_image[i][j]/255))
+
+			if map_coordinate_to_region[possible_point] not in numerator_y:
+				numerator_y[ map_coordinate_to_region[possible_point] ] = (j * (1 - np_image[i][j]/255) )
+			else:
+				numerator_y[ map_coordinate_to_region[possible_point] ] += (j * (1 - np_image[i][j]/255))
+
+	for index in range(len(generating_points)):
+		generating_points[index] = ((int)(numerator_x[generating_points[index]]/denominator[generating_points[index]]) , (int)(numerator_y[generating_points[index]]/denominator[generating_points[index]]))
+		if(generating_points[index][0] >= len(np_image)):
+			generating_points[index] = (len(np_image) -1, generating_points[index][1])
+		if(generating_points[index][1] >= len(np_image[0])):
+			generating_points[index] = ( generating_points[index][0] ,len(np_image[0]) -1 )
+		
+	return generating_points
+
+for i in range(0,5000):
+	generating_points = run_single_iteration(generating_points)
+	# print(len(generating_points))
+	im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
+	draw = ImageDraw.Draw(im)
+	# for j in range(10):
+	# 	draw.point([(j*10+1, 1)] , fill=(0,0,0))
+		# draw.ellipse((j*10+1, 1, j*10+3, 3), fill=(255, 0, 0), outline=(0, 0, 0))
+	if i%100==0:	
+		for j in generating_points:
+			if j[0] >= len(np_image):
+				j = (len(np_image)-1,j[1])
+			if j[1] >= len(np_image[0]):
+				j = (j[0],len(np_image[0])-1)
+
+			# print(str(j[0]) + " " + str(j[1]) )
+			im.putpixel((j[0],j[1]),(0,0,0))
+			# draw.ellipse((j[0], j[1], 5, 5), fill=(255, 0, 0), outline=(0, 0, 0))
+			# draw.point([(j[0], j[1])] , fill=(0,0,0))
+		im.show()
+	generating_points_dict = {}
+	temp = []
+	for pt in generating_points:
+		if pt not in generating_points_dict:
+			generating_points_dict[pt] = 1
+			temp.append(pt)
+	generating_points = temp
+
+for j in generating_points:
+	if j[0] >= len(np_image):
+		j = (len(np_image)-1,j[1])
+	if j[1] >= len(np_image[0]):
+		j = (j[0],len(np_image[0])-1)
+
+	# print(str(j[0]) + " " + str(j[1]) )
+	im.putpixel((j[0],j[1]),(0,0,0))
+	# draw.ellipse((j[0], j[1], 5, 5), fill=(255, 0, 0), outline=(0, 0, 0))
+	# draw.point([(j[0], j[1])] , fill=(0,0,0))
+im.save("output.png")
+pickle.dump(generating_points, )
