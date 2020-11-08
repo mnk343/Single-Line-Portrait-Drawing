@@ -7,29 +7,30 @@ import numpy
 input_image = Image.open("image.png")
 grayscale_image = ImageOps.grayscale( input_image )
 grayscale_image.show()
-np_image = numpy.array(grayscale_image)
-# print(np_image.shape)
-# # print(np_image)
-# for i in np_image:
-# 	print(i)
-# 	print()
-# exit()
+numpy_image = numpy.array(grayscale_image)
+np_image = []
+
+for i in range(0 ,(numpy_image.shape[0])):
+	np_temp = []
+	for j in range(0 ,numpy_image.shape[1] ):
+		np_temp.append(numpy_image[i][j])
+	np_image.append(np_temp)
+
 generating_points = []
-while len(generating_points) < 500:
+while len(generating_points) < 300:
     x, y = randint(0, len(np_image) - 1), randint(0, len(np_image[0]) - 1)
     if (x,y) not in generating_points:
     	generating_points.append((x, y))
 
 def run_single_iteration(generating_points):
 	grid = []
-	for i in range(0 ,(np_image.shape[0])):
+	for i in range(0 ,(len(np_image))):
 		grid_row = []
-		for j in range(0 ,np_image.shape[1] ):
+		for j in range(0 ,len(np_image[0]) ):
 			grid_row.append(1000000)
 		grid.append(grid_row)
 
 	map_coordinate_to_region = {}
-
 	def get_possible_points( grid_point, grid, visited_pixels ):
 		x_coords = [1,0,-1,0]
 		y_coords = [0,1,0,-1]
@@ -69,8 +70,8 @@ def run_single_iteration(generating_points):
 	numerator_x = {}
 	numerator_y = {}
 
-	for i in range(0 ,(np_image.shape[0])):
-		for j in range(0 ,np_image.shape[1] ):
+	for i in range(0 ,len(np_image)):
+		for j in range(0 ,len(np_image[0]) ):
 			possible_point = (i,j)
 			if map_coordinate_to_region[possible_point] not in denominator:
 				denominator[ map_coordinate_to_region[possible_point] ] = (1 - np_image[i][j]/255)
@@ -96,15 +97,12 @@ def run_single_iteration(generating_points):
 		
 	return generating_points
 
-for i in range(0,5000):
+for i in range(0,100):
 	generating_points = run_single_iteration(generating_points)
-	# print(len(generating_points))
-	im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
-	draw = ImageDraw.Draw(im)
-	# for j in range(10):
-	# 	draw.point([(j*10+1, 1)] , fill=(0,0,0))
-		# draw.ellipse((j*10+1, 1, j*10+3, 3), fill=(255, 0, 0), outline=(0, 0, 0))
+	print(i)
 	if i%100==0:	
+		im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
+		draw = ImageDraw.Draw(im)
 		for j in generating_points:
 			if j[0] >= len(np_image):
 				j = (len(np_image)-1,j[1])
@@ -124,6 +122,9 @@ for i in range(0,5000):
 			temp.append(pt)
 	generating_points = temp
 
+im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
+draw = ImageDraw.Draw(im)
+	
 for j in generating_points:
 	if j[0] >= len(np_image):
 		j = (len(np_image)-1,j[1])
@@ -135,4 +136,4 @@ for j in generating_points:
 	# draw.ellipse((j[0], j[1], 5, 5), fill=(255, 0, 0), outline=(0, 0, 0))
 	# draw.point([(j[0], j[1])] , fill=(0,0,0))
 im.save("output.png")
-pickle.dump(generating_points, )
+pickle.dump(generating_points, "file" )
