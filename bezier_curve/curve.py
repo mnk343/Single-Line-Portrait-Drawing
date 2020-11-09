@@ -1,11 +1,12 @@
-import pickle, random, math
+import pickle, random, math, sys
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from copy import copy
 from heapq import heapify, heappush, heappop
+from PIL import Image
+from PIL import ImageOps
 
-w, h = 1000, 1000
 class Point:    
     def __init__(self, x, y):  
         self.x = x  
@@ -22,7 +23,7 @@ def getPoint(t, control_points):
     return pt
 
 def drawLine(point_A, point_B):
-    glPointSize(1)
+    glPointSize(2)
     glBegin(GL_POINTS)
 
     t = 0.0
@@ -36,7 +37,7 @@ def drawLine(point_A, point_B):
     glEnd()
 
 def drawBezierCurve(control_points):
-    glPointSize(1)
+    glPointSize(2)
     glBegin(GL_POINTS)
 
     t = 0.0
@@ -150,31 +151,39 @@ def getSingleLinePath():
 
     return path
     
-def iterate():
-    glViewport(0, 0, 1000, 1000)
+def init():
+    glViewport(0, 0, width, height)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glOrtho(0.0, 1000, 0.0, 1000, 0.0, 1.0)
+    glOrtho(0.0, width, 0.0, height, 0.0, 1.0)
     glMatrixMode (GL_MODELVIEW)
     glLoadIdentity()
 
-def showScreen():
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+
+def render():
     glLoadIdentity()
-    iterate()
-    glColor3f(1.0, 0.0, 3.0)
+    init()
+    glClearColor(1, 1, 1, 1)
+    glClear(GL_COLOR_BUFFER_BIT)
+    glColor3f(0, 0, 0)
     # drawPictureUsingBezier() 
     # drawPictureUsingLines()
     drawPictureUsingMultipleBezier()
-    glutSwapBuffers()
+    glFlush()
 
+
+
+# main function
 glutInit()
 glutInitDisplayMode(GLUT_RGBA)
-glutInitWindowSize(1000, 1000)
+width, height = 1000, 1000
+glutInitWindowSize(width, height)
 glutInitWindowPosition(0, 0)
 wind = glutCreateWindow("Single Line Drawing")
 
-pickle_in = open("file","rb")
+stipple_file = sys.argv[1]
+
+pickle_in = open(stipple_file, "rb")
 stipples_coords = pickle.load(pickle_in)
 points = []
 stipples_coords.sort()
@@ -185,6 +194,15 @@ for stipples_coord in stipples_coords:
 
 path = getSingleLinePath()
 
-glutDisplayFunc(showScreen)
-glutIdleFunc(showScreen)
-glutMainLoop()
+# glutDisplayFunc(showScreen)
+# glutIdleFunc(showScreen)
+# glutMainLoop()
+
+render()
+
+# save the image to file
+image_name = sys.argv[2]
+glPixelStorei(GL_PACK_ALIGNMENT, 1)
+data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
+image = Image.frombytes("RGBA", (width, height), data)
+image.save(image_name + '.png', 'PNG')
