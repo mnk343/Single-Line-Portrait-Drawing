@@ -20,16 +20,30 @@ def getPoint(t, control_points):
     pt.y = (((1 - t) ** 3) * control_points[0].y) + (3 * ((1 - t) ** 2) * t * control_points[1].y) + (3 * (1 - t) * (t ** 2) * control_points[2].y) + ((t ** 3) * control_points[3].y)
     return pt
 
-def drawCurve(control_points):
+def drawLine(point_A, point_B):
     glPointSize(1)
     glBegin(GL_POINTS)
 
     t = 0.0
+    pt = Point(0, 0)
     while t < 1.0:
-        pt = Point(200, 200)
+        pt.x = (1 - t) * point_A.x + t * point_B.x
+        pt.y = (1 - t) * point_A.y + t * point_B.y
+        drawPoint(pt)
+        t += 0.01
+
+    glEnd()
+
+def drawCurve(control_points):
+    glPointSize(3)
+    glBegin(GL_POINTS)
+
+    t = 0.0
+    pt = Point(0, 0)
+    while t < 1.0:
         pt = getPoint(t, control_points)
         drawPoint(pt)
-        t += 0.0001
+        t += 0.01
 
     glEnd()
 
@@ -45,7 +59,7 @@ def get_third_cp(control_points):
     pt.y = control_points[1].y + 4 * (control_points[3].y - control_points[2].y)
     return pt
 
-def drawPicture(points):
+def drawPictureUsingBezier():
     control_points = [Point(0,0) for i in range(4)]
 
     # draw first curve (join first two points)
@@ -68,6 +82,9 @@ def drawPicture(points):
         drawCurve(new_control_points)
         control_points = copy(new_control_points)
 
+def drawPictureUsingLines():
+    for i in range(len(points) - 1):
+        drawLine(points[i], points[i+1])
 
 def iterate():
     glViewport(0, 0, 1000, 1000)
@@ -82,26 +99,8 @@ def showScreen():
     glLoadIdentity()
     iterate()
     glColor3f(1.0, 0.0, 3.0)
-    
-    pickle_in = open("file","rb")
-    stipples_coords = pickle.load(pickle_in)
-    points = []
-    stipples_coords.sort()
-    for stipples_coord in stipples_coords:
-        if stipples_coord ==(0,0):
-            continue
-        # points.append(Point( stipples_coord[0] , stipples_coord[1] ))
-    for i in points:
-        print(i.x , i.y)
-    for i in range(2):
-        points.append(Point(400 + 100,400 + 200))
-        points.append(Point(400 + 150,400 + 300))
-        # points.append(Point(400 + 200,400 + 250))
-        # points.append(Point(400 + 300,400 + 300))
-        # points.append(Point(400 ,400 ))
-
-    drawPicture(points)   
-
+    # drawPictureUsingBezier() 
+    drawPictureUsingLines()
     glFlush()
 
 glutInit()
@@ -109,6 +108,25 @@ glutInitDisplayMode(GLUT_RGBA)
 glutInitWindowSize(1000, 1000)
 glutInitWindowPosition(0, 0)
 wind = glutCreateWindow("OpenGL Coding Practice")
+
+pickle_in = open("file","rb")
+stipples_coords = pickle.load(pickle_in)
+points = []
+stipples_coords.sort()
+for stipples_coord in stipples_coords:
+    if stipples_coord ==(0,0):
+        continue
+    points.append(Point( stipples_coord[0] , stipples_coord[1] ))
+# for i in points:
+#     print(i.x , i.y)
+# for i in range(1):
+# points.append(Point(400 + 100,400 + 200))
+# points.append(Point(400 + 105,400 + 205))
+# points.append(Point(400 + 200,400 + 250))
+# points.append(Point(400 + 300,400 + 300))
+# points.append(Point(400 ,400 ))
+    
+
 glutDisplayFunc(showScreen)
 glutIdleFunc(showScreen)
 glutMainLoop()
