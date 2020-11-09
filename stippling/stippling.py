@@ -89,21 +89,22 @@ def run_single_iteration(generating_points):
 			generating_points[index] = (0,0)
 			continue
 		generating_points[index] = ((int)(numerator_x[generating_points[index]]/denominator[generating_points[index]]) , (int)(numerator_y[generating_points[index]]/denominator[generating_points[index]]))
-	if(generating_points[index][0] >= len(np_image)):
-	  generating_points[index] = (len(np_image) -1, generating_points[index][1])
-	if(generating_points[index][1] >= len(np_image[0])):
-	  generating_points[index] = ( generating_points[index][0] ,len(np_image[0]) -1 )
+		if(generating_points[index][0] >= len(np_image)):
+		  generating_points[index] = (len(np_image) -1, generating_points[index][1])
+		if(generating_points[index][1] >= len(np_image[0])):
+		  generating_points[index] = ( generating_points[index][0] ,len(np_image[0]) -1 )
 
 	generating_points_dict = {}
 	temp = []
 	for pt in generating_points:
-		if pt not in generating_points_dict:
+		if pt not in generating_points_dict and pt[0] != len(np_image) and pt[1] != len(np_image[0]): 
 			generating_points_dict[pt] = 1
 			temp.append(pt)
 		generating_points = temp
 	return generating_points
 
-for i in range(0,300):
+
+for i in range(0,100):
 	generating_points = run_single_iteration(generating_points)
 	print(i)
 	if i%50==0:	
@@ -112,10 +113,13 @@ for i in range(0,300):
 		for j in generating_points:
 			im.putpixel((j[0],j[1]),(0,0,0))
 		im.save("output_" + str(i) + ".png" )
+		
+		if i==0:
+			pickle.dump(generating_points, open('file_initial', 'wb'))
 
 im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
 draw = ImageDraw.Draw(im)
 for j in generating_points:
 	im.putpixel((j[0],j[1]),(0,0,0))
 im.save("output.png")
-pickle.dump(generating_points, open('file', 'wb'))
+pickle.dump(generating_points, open('file_final', 'wb'))
