@@ -1,3 +1,4 @@
+import pickle
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
@@ -28,7 +29,7 @@ def drawCurve(control_points):
         pt = Point(200, 200)
         pt = getPoint(t, control_points)
         drawPoint(pt)
-        t += 0.001
+        t += 0.0001
 
     glEnd()
 
@@ -81,14 +82,23 @@ def showScreen():
     glLoadIdentity()
     iterate()
     glColor3f(1.0, 0.0, 3.0)
-
+    
+    pickle_in = open("file","rb")
+    stipples_coords = pickle.load(pickle_in)
     points = []
-    # for i in range(2):
-    points.append(Point(400 + 100,400 + 200))
-    points.append(Point(400 + 150,400 + 300))
-    points.append(Point(400 + 200,400 + 250))
-    points.append(Point(400 + 300,400 + 300))
-    points.append(Point(400 ,400 ))
+    stipples_coords.sort()
+    for stipples_coord in stipples_coords:
+        if stipples_coord ==(0,0):
+            continue
+        # points.append(Point( stipples_coord[0] , stipples_coord[1] ))
+    for i in points:
+        print(i.x , i.y)
+    for i in range(2):
+        points.append(Point(400 + 100,400 + 200))
+        points.append(Point(400 + 150,400 + 300))
+        # points.append(Point(400 + 200,400 + 250))
+        # points.append(Point(400 + 300,400 + 300))
+        # points.append(Point(400 ,400 ))
 
     drawPicture(points)   
 
