@@ -167,8 +167,8 @@ def render():
     glClear(GL_COLOR_BUFFER_BIT)
     glColor3f(0, 0, 0)
     # drawPictureUsingBezier() 
-    # drawPictureUsingLines()
-    drawPictureUsingMultipleBezier()
+    drawPictureUsingLines()
+    # drawPictureUsingMultipleBezier()
     glFlush()
 
 
@@ -201,8 +201,7 @@ path = getSingleLinePath()
 render()
 
 # save the image to file
-image_name = sys.argv[2]
 glPixelStorei(GL_PACK_ALIGNMENT, 1)
 data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 image = Image.frombytes("RGBA", (width, height), data)
-image.save(image_name + '.png', 'PNG')
+image.save('straight_' + stipple_file + '.png', 'PNG')
