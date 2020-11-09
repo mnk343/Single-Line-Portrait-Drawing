@@ -1,4 +1,3 @@
-from __future__ import division
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy import interpolate
@@ -6,7 +5,6 @@ from heapq import heapify, heappush, heappop
 import math
 import random
 import pickle
-import numpy
 stipples_pickle = pickle.load( open("file" , "rb") )
 stipples_dict = {}
 stipples = []
@@ -46,16 +44,15 @@ visited = [False for i in range(len(stipples))]
 next_point = stipples[0]
 visited[0] = 1
 points = []
-print("k")
 
 while next_point != -1:
     points.append([next_point[0] , next_point[1]])
     next_point = get_next_point(next_point, visited)
-print("h")
-nodes = numpy.array(points)
-# nodes = np.array( [ [1, 2],[1, 5],[6, 15], [10, 6], [10, 3], [3, 7],[1, 7],[6, 15] ] )
+nodes = np.array(points)
+
 xfinal = []
 yfinal = []
+
 for i in range(0 , len(nodes) // 30 ):
 	x = nodes[:,0][i*30 :i*30 + 30]
 	y = nodes[:,1][i*30 : i*30 + 30]
@@ -69,8 +66,5 @@ for i in range(0 , len(nodes) // 30 ):
 plt.plot(  xfinal ,yfinal )
 plt.legend( [ 'spline'] )
 
-# plt.plot( x,y,'o' , xnew ,ynew )
-# plt.legend( [ 'data' , 'spline'] )
-# plt.axis( [ x.min() - 1 , x.max() + 1 , y.min() - 1 , y.max() + 2 ] )
 plt.axis( [0 , 500 , 0 , 500 ] )
 plt.show()
