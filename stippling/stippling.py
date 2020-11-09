@@ -6,8 +6,9 @@ import numpy
 
 input_image = Image.open("image.png")
 grayscale_image = ImageOps.grayscale( input_image )
-grayscale_image.show()
+grayscale_image.save("hello.png")
 numpy_image = numpy.array(grayscale_image)
+numpy_image = numpy_image.T
 np_image = []
 
 for i in range(0 ,(numpy_image.shape[0])):
@@ -17,7 +18,7 @@ for i in range(0 ,(numpy_image.shape[0])):
 	np_image.append(np_temp)
 
 generating_points = []
-while len(generating_points) < 300:
+while len(generating_points) < 1000:
     x, y = randint(0, len(np_image) - 1), randint(0, len(np_image[0]) - 1)
     if (x,y) not in generating_points:
     	generating_points.append((x, y))
@@ -64,8 +65,6 @@ def run_single_iteration(generating_points):
 					map_coordinate_to_region[possible_point] = map_coordinate_to_region[grid_point]
 
 	run_bfs(generating_points)
-	# print("done")
-
 	denominator = {}
 	numerator_x = {}
 	numerator_y = {}
@@ -77,63 +76,46 @@ def run_single_iteration(generating_points):
 				denominator[ map_coordinate_to_region[possible_point] ] = (1 - np_image[i][j]/255)
 			else:
 				denominator[ map_coordinate_to_region[possible_point] ] += (1 - np_image[i][j]/255)
-
 			if map_coordinate_to_region[possible_point] not in numerator_x:
 				numerator_x[ map_coordinate_to_region[possible_point] ] = (i * (1 - np_image[i][j]/255))
 			else:
 				numerator_x[ map_coordinate_to_region[possible_point] ] += (i * (1 - np_image[i][j]/255))
-
 			if map_coordinate_to_region[possible_point] not in numerator_y:
 				numerator_y[ map_coordinate_to_region[possible_point] ] = (j * (1 - np_image[i][j]/255) )
 			else:
 				numerator_y[ map_coordinate_to_region[possible_point] ] += (j * (1 - np_image[i][j]/255))
-
 	for index in range(len(generating_points)):
+		if denominator[generating_points[index]] == 0:
+			generating_points[index] = (0,0)
+			continue
 		generating_points[index] = ((int)(numerator_x[generating_points[index]]/denominator[generating_points[index]]) , (int)(numerator_y[generating_points[index]]/denominator[generating_points[index]]))
-		if(generating_points[index][0] >= len(np_image)):
-			generating_points[index] = (len(np_image) -1, generating_points[index][1])
-		if(generating_points[index][1] >= len(np_image[0])):
-			generating_points[index] = ( generating_points[index][0] ,len(np_image[0]) -1 )
-		
-	return generating_points
+	if(generating_points[index][0] >= len(np_image)):
+	  generating_points[index] = (len(np_image) -1, generating_points[index][1])
+	if(generating_points[index][1] >= len(np_image[0])):
+	  generating_points[index] = ( generating_points[index][0] ,len(np_image[0]) -1 )
 
-for i in range(0,100):
-	generating_points = run_single_iteration(generating_points)
-	print(i)
-	if i%100==0:	
-		im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
-		draw = ImageDraw.Draw(im)
-		for j in generating_points:
-			if j[0] >= len(np_image):
-				j = (len(np_image)-1,j[1])
-			if j[1] >= len(np_image[0]):
-				j = (j[0],len(np_image[0])-1)
-
-			# print(str(j[0]) + " " + str(j[1]) )
-			im.putpixel((j[0],j[1]),(0,0,0))
-			# draw.ellipse((j[0], j[1], 5, 5), fill=(255, 0, 0), outline=(0, 0, 0))
-			# draw.point([(j[0], j[1])] , fill=(0,0,0))
-		im.show()
 	generating_points_dict = {}
 	temp = []
 	for pt in generating_points:
 		if pt not in generating_points_dict:
 			generating_points_dict[pt] = 1
 			temp.append(pt)
-	generating_points = temp
+		generating_points = temp
+	return generating_points
+
+for i in range(0,300):
+	generating_points = run_single_iteration(generating_points)
+	print(i)
+	if i%50==0:	
+		im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
+		draw = ImageDraw.Draw(im)
+		for j in generating_points:
+			im.putpixel((j[0],j[1]),(0,0,0))
+		im.save("output_" + str(i) + ".png" )
 
 im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
 draw = ImageDraw.Draw(im)
-	
 for j in generating_points:
-	if j[0] >= len(np_image):
-		j = (len(np_image)-1,j[1])
-	if j[1] >= len(np_image[0]):
-		j = (j[0],len(np_image[0])-1)
-
-	# print(str(j[0]) + " " + str(j[1]) )
 	im.putpixel((j[0],j[1]),(0,0,0))
-	# draw.ellipse((j[0], j[1], 5, 5), fill=(255, 0, 0), outline=(0, 0, 0))
-	# draw.point([(j[0], j[1])] , fill=(0,0,0))
 im.save("output.png")
-pickle.dump(generating_points, "file" )
+pickle.dump(generating_points, open('file', 'wb'))
