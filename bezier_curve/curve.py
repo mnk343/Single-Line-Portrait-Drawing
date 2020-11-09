@@ -1,8 +1,9 @@
-import pickle
+import pickle, random, math
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from copy import copy
+from heapq import heapify, heappush, heappop
 
 w, h = 1000, 1000
 class Point:    
@@ -86,6 +87,54 @@ def drawPictureUsingLines():
     for i in range(len(points) - 1):
         drawLine(points[i], points[i+1])
 
+def get_distance(a, b):
+    return math.sqrt(((a.x - b.x) ** 2) + ((a.y - b.y) ** 2))
+
+
+def get_next_point(current_point, visited):
+    # Creating empty heap 
+    close_points = [] 
+    heapify(close_points)
+
+    count_closest_points = 1
+
+    for i, pt in enumerate(points):
+        if not visited[i]:
+            distance = get_distance(current_point, pt)
+            heappush(close_points, (-1 * distance, i))
+            if len(close_points) > count_closest_points:
+                heappop(close_points)
+    
+    # for elem in close_points:
+    #     visited[elem[1]] = True
+    
+    if len(close_points) == 0:
+        return -1
+    
+    random.seed(451)
+    random_index = random.randint(0, 4)
+    next_point = copy(points[close_points[random_index][1]])
+    visited[close_points[random_index][1]] = True
+    return next_point
+
+
+def singleLineDrawing():
+    n = len(points)
+    visited = [False for i in range(n)]
+
+    random.seed(9001)
+    random_index = random.randint(0, n-1)
+    start = copy(points[random_index])
+    current_point = start
+
+    next_point = get_next_point(current_point, visited)
+
+    while next_point != -1:
+        drawLine(current_point, next_point) 
+        current_point = copy(next_point)
+        next_point = get_next_point(current_point, visited)
+
+    
 def iterate():
     glViewport(0, 0, 1000, 1000)
     glMatrixMode(GL_PROJECTION)
@@ -100,8 +149,11 @@ def showScreen():
     iterate()
     glColor3f(1.0, 0.0, 3.0)
     # drawPictureUsingBezier() 
-    drawPictureUsingLines()
-    glFlush()
+    # drawPictureUsingLines()
+
+    singleLineDrawing()
+
+    glutSwapBuffers()
 
 glutInit()
 glutInitDisplayMode(GLUT_RGBA)
@@ -114,7 +166,7 @@ stipples_coords = pickle.load(pickle_in)
 points = []
 stipples_coords.sort()
 for stipples_coord in stipples_coords:
-    if stipples_coord ==(0,0):
+    if stipples_coord[0] == 0 or stipples_coord[1] == 0:
         continue
     points.append(Point( stipples_coord[0] , stipples_coord[1] ))
 # for i in points:
@@ -125,7 +177,6 @@ for stipples_coord in stipples_coords:
 # points.append(Point(400 + 200,400 + 250))
 # points.append(Point(400 + 300,400 + 300))
 # points.append(Point(400 ,400 ))
-    
 
 glutDisplayFunc(showScreen)
 glutIdleFunc(showScreen)
