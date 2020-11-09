@@ -35,8 +35,8 @@ def drawLine(point_A, point_B):
 
     glEnd()
 
-def drawCurve(control_points):
-    glPointSize(3)
+def drawBezierCurve(control_points):
+    glPointSize(1)
     glBegin(GL_POINTS)
 
     t = 0.0
@@ -60,32 +60,42 @@ def get_third_cp(control_points):
     pt.y = control_points[1].y + 4 * (control_points[3].y - control_points[2].y)
     return pt
 
+
 def drawPictureUsingBezier():
     control_points = [Point(0,0) for i in range(4)]
-
+    
     # draw first curve (join first two points)
-    control_points[0] = copy(points[0])
-    control_points[3] = copy(points[1])
+    control_points[0] = copy(path[0])
+    control_points[3] = copy(path[1])
 
-    control_points[1] = copy(points[0])
-    control_points[2] = copy(points[0])
+    control_points[1] = copy(path[0])
+    control_points[2] = copy(path[0])
 
-    drawCurve(control_points)
+    drawBezierCurve(control_points)
 
     new_control_points = [Point(0,0) for i in range(4)]
-    for i in range(2, len(points)):
-        new_control_points[0] = copy(points[i-1])
-        new_control_points[3] = copy(points[i])
+    for i in range(2, len(path)):
+        new_control_points[0] = copy(path[i-1])
+        new_control_points[3] = copy(path[i])
 
         new_control_points[1] = get_second_cp(control_points)
         new_control_points[2] = get_third_cp(control_points)
 
-        drawCurve(new_control_points)
+        drawBezierCurve(new_control_points)
         control_points = copy(new_control_points)
 
+
 def drawPictureUsingLines():
-    for i in range(len(points) - 1):
-        drawLine(points[i], points[i+1])
+    for i in range(len(path) - 1):
+        drawLine(path[i], path[i+1])
+
+
+def drawPictureUsingMultipleBezier():
+    path_index = 0
+    while path_index + 4 <= len(path):
+        drawBezierCurve(path[path_index : path_index + 4])
+        path_index += 3
+
 
 def get_distance(a, b):
     return math.sqrt(((a.x - b.x) ** 2) + ((a.y - b.y) ** 2))
@@ -112,13 +122,14 @@ def get_next_point(current_point, visited):
         return -1
     
     random.seed(451)
-    random_index = random.randint(0, 4)
+    random_index = random.randint(0, count_closest_points - 1)
     next_point = copy(points[close_points[random_index][1]])
     visited[close_points[random_index][1]] = True
     return next_point
 
 
-def singleLineDrawing():
+def getSingleLinePath():
+    path = []
     n = len(points)
     visited = [False for i in range(n)]
 
@@ -126,14 +137,18 @@ def singleLineDrawing():
     random_index = random.randint(0, n-1)
     start = copy(points[random_index])
     current_point = start
+    visited[random_index] = True
+    path.append(copy(current_point))
 
     next_point = get_next_point(current_point, visited)
 
     while next_point != -1:
-        drawLine(current_point, next_point) 
+        # drawLine(current_point, next_point) 
         current_point = copy(next_point)
+        path.append(copy(current_point))
         next_point = get_next_point(current_point, visited)
 
+    return path
     
 def iterate():
     glViewport(0, 0, 1000, 1000)
@@ -150,16 +165,14 @@ def showScreen():
     glColor3f(1.0, 0.0, 3.0)
     # drawPictureUsingBezier() 
     # drawPictureUsingLines()
-
-    singleLineDrawing()
-
+    drawPictureUsingMultipleBezier()
     glutSwapBuffers()
 
 glutInit()
 glutInitDisplayMode(GLUT_RGBA)
 glutInitWindowSize(1000, 1000)
 glutInitWindowPosition(0, 0)
-wind = glutCreateWindow("OpenGL Coding Practice")
+wind = glutCreateWindow("Single Line Drawing")
 
 pickle_in = open("file","rb")
 stipples_coords = pickle.load(pickle_in)
@@ -169,14 +182,8 @@ for stipples_coord in stipples_coords:
     if stipples_coord[0] == 0 or stipples_coord[1] == 0:
         continue
     points.append(Point( stipples_coord[0] , stipples_coord[1] ))
-# for i in points:
-#     print(i.x , i.y)
-# for i in range(1):
-# points.append(Point(400 + 100,400 + 200))
-# points.append(Point(400 + 105,400 + 205))
-# points.append(Point(400 + 200,400 + 250))
-# points.append(Point(400 + 300,400 + 300))
-# points.append(Point(400 ,400 ))
+
+path = getSingleLinePath()
 
 glutDisplayFunc(showScreen)
 glutIdleFunc(showScreen)
