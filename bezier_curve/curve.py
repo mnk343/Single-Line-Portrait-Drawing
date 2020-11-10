@@ -23,7 +23,7 @@ def getPoint(t, control_points):
     return pt
 
 def drawLine(point_A, point_B):
-    glPointSize(2)
+    glPointSize(1)
     glBegin(GL_POINTS)
 
     t = 0.0
@@ -32,7 +32,7 @@ def drawLine(point_A, point_B):
         pt.x = (1 - t) * point_A.x + t * point_B.x
         pt.y = (1 - t) * point_A.y + t * point_B.y
         drawPoint(pt)
-        t += 0.01
+        t += 0.001
 
     glEnd()
 

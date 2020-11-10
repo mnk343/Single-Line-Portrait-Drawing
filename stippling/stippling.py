@@ -72,8 +72,6 @@ def run_single_iteration(generating_points):
 	for i in range(0 ,len(np_image)):
 		for j in range(0 ,len(np_image[0]) ):
 			possible_point = (i,j)
-			if np_image[i][j] == 220:
-				np_image[i][j] = 254
 			if map_coordinate_to_region[possible_point] not in denominator:
 				denominator[ map_coordinate_to_region[possible_point] ] = (1 - np_image[i][j]/255)
 			else:
