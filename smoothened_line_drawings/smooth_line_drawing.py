@@ -66,5 +66,5 @@ for i in range(0 , len(nodes) // 30 ):
 plt.plot(  xfinal ,yfinal )
 plt.legend( [ 'spline'] )
 
-plt.axis( [0 , 500 , 0 , 500 ] )
+plt.axis( [0 , 500 , 0 , 400 ] )
 plt.show()
