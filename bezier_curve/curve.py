@@ -75,7 +75,7 @@ def drawPictureUsingBezier():
     drawBezierCurve(control_points)
 
     new_control_points = [Point(0,0) for i in range(4)]
-    for i in range(2, len(path)):
+    for i in range(2, len(path[:10])):
         new_control_points[0] = copy(path[i-1])
         new_control_points[3] = copy(path[i])
 
@@ -166,8 +166,8 @@ def render():
     glClearColor(1, 1, 1, 1)
     glClear(GL_COLOR_BUFFER_BIT)
     glColor3f(0, 0, 0)
-    # drawPictureUsingBezier() 
-    drawPictureUsingLines()
+    drawPictureUsingBezier() 
+    # drawPictureUsingLines()
     # drawPictureUsingMultipleBezier()
     glFlush()
 
@@ -204,4 +204,4 @@ render()
 glPixelStorei(GL_PACK_ALIGNMENT, 1)
 data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 image = Image.frombytes("RGBA", (width, height), data)
-image.save('straight_' + stipple_file + '.png', 'PNG')
+image.save(stipple_file + '2.png', 'PNG')
