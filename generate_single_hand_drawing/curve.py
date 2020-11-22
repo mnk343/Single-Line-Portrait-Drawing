@@ -7,6 +7,9 @@ from heapq import heapify, heappush, heappop
 from PIL import Image
 from PIL import ImageOps
 
+is_generate_image_by_bezier_curve = input("Enter 1 if you wish to generate output using Bezier Curve, 0 for straight lines: ")
+is_generate_image_by_bezier_curve = int(is_generate_image_by_bezier_curve)
+
 class Point:    
     def __init__(self, x, y):  
         self.x = x  
@@ -116,9 +119,6 @@ def get_next_point(current_point, visited):
             if len(close_points) > count_closest_points:
                 heappop(close_points)
     
-    # for elem in close_points:
-    #     visited[elem[1]] = True
-    
     if len(close_points) == 0:
         return -1
     
@@ -144,7 +144,6 @@ def getSingleLinePath():
     next_point = get_next_point(current_point, visited)
 
     while next_point != -1:
-        # drawLine(current_point, next_point) 
         current_point = copy(next_point)
         path.append(copy(current_point))
         next_point = get_next_point(current_point, visited)
@@ -166,12 +165,11 @@ def render():
     glClearColor(1, 1, 1, 1)
     glClear(GL_COLOR_BUFFER_BIT)
     glColor3f(0, 0, 0)
-    drawPictureUsingBezier() 
-    # drawPictureUsingLines()
-    # drawPictureUsingMultipleBezier()
+    if is_generate_image_by_bezier_curve ==1:
+        drawPictureUsingBezier() 
+    else:
+        drawPictureUsingLines()
     glFlush()
-
-
 
 # main function
 glutInit()
@@ -193,15 +191,10 @@ for stipples_coord in stipples_coords:
     points.append(Point( stipples_coord[0] , stipples_coord[1] ))
 
 path = getSingleLinePath()
-
-# glutDisplayFunc(showScreen)
-# glutIdleFunc(showScreen)
-# glutMainLoop()
-
 render()
 
 # save the image to file
 glPixelStorei(GL_PACK_ALIGNMENT, 1)
 data = glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE)
 image = Image.frombytes("RGBA", (width, height), data)
-image.save(stipple_file + '2.png', 'PNG')
+image.save(stipple_file + '_output.png', 'PNG')
