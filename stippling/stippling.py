@@ -4,9 +4,12 @@ from random import randint
 from PIL import Image, ImageOps, ImageDraw
 import numpy
 
-input_image = Image.open("image.png")
+input_image = input("Please enter correct file path of input image: ")
+number_of_stipples = input("Enter number of desired stipples: ")
+number_of_stipples = int(number_of_stipples)
+
+input_image = Image.open(input_image)
 grayscale_image = ImageOps.grayscale( input_image )
-grayscale_image.save("hello.png")
 numpy_image = numpy.array(grayscale_image)
 numpy_image = numpy_image.T
 np_image = []
@@ -18,7 +21,7 @@ for i in range(0 ,(numpy_image.shape[0])):
 	np_image.append(np_temp)
 
 generating_points = []
-while len(generating_points) < 1000:
+while len(generating_points) < number_of_stipples:
     x, y = randint(0, len(np_image) - 1), randint(0, len(np_image[0]) - 1)
     if (x,y) not in generating_points:
     	generating_points.append((x, y))
@@ -104,9 +107,9 @@ def run_single_iteration(generating_points):
 	return generating_points
 
 
-for i in range(0,100):
+for i in range(0,5):
 	generating_points = run_single_iteration(generating_points)
-	print(i)
+	print("Iteration " + str(i) +" successful.")
 	if i%50==0:	
 		im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
 		draw = ImageDraw.Draw(im)
@@ -114,12 +117,9 @@ for i in range(0,100):
 			im.putpixel((j[0],j[1]),(0,0,0))
 		im.save("output_" + str(i) + ".png" )
 		
-		if i==0:
-			pickle.dump(generating_points, open('file_initial', 'wb'))
-
 im = Image.new('RGB', (len(np_image), len(np_image[0])), (255, 255, 255))
 draw = ImageDraw.Draw(im)
 for j in generating_points:
 	im.putpixel((j[0],j[1]),(0,0,0))
-im.save("output.png")
-pickle.dump(generating_points, open('file_final', 'wb'))
+im.save("output_image.png")
+pickle.dump(generating_points, open('generating_points', 'wb'))
