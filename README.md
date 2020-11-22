@@ -42,12 +42,16 @@ This program upon execution generates the required output files.
 Below are the results we got upon execution of our program:
 For **Stippling**:
 Portrait of a lady:
+
 ![Portrait of a lady](https://github.com/mnk343/Single-Line-Portrait-Drawing/blob/master/Interesting%20Results/Image_4.1_Portrait_50000_Stiples/output.png?raw=true)
 Wolverine:
+
 ![Wolverine](https://github.com/mnk343/Single-Line-Portrait-Drawing/blob/master/Interesting%20Results/Image_6_Wolverine_50000_Stipples/output.png?raw=true)
 
 For **Single Line Drawing**:
 Apple logo:
+
 ![Apple logo](https://github.com/mnk343/Single-Line-Portrait-Drawing/blob/master/Interesting%20Results/result_apple_logo.png?raw=true)
 Harry Potter:
+
 ![Apple logo](https://github.com/mnk343/Single-Line-Portrait-Drawing/blob/master/Interesting%20Results/result_harry_potter.png?raw=true)
